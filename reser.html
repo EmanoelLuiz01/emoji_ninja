@@ -25,7 +25,6 @@
             overflow-x: hidden;
         }
 
-        /* Estrelas de fundo */
         .stars {
             position: fixed;
             top: 0;
@@ -49,7 +48,11 @@
             50% { opacity: 1; }
         }
 
-        /* Telas */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); background: #ff3300; box-shadow: 0 8px 0 #8b3a00; }
+        }
+
         .screen {
             position: fixed;
             top: 0;
@@ -186,13 +189,14 @@
             box-shadow: 0 2px 0 #3a2a6a;
         }
 
-        /* Game Container */
         .game-container {
             background: rgba(0, 0, 0, 0.4);
             border-radius: 48px;
             padding: 20px;
             box-shadow: 0 20px 35px rgba(0,0,0,0.5);
             backdrop-filter: blur(2px);
+            width: 100%;
+            max-width: 1200px;
         }
 
         canvas {
@@ -253,6 +257,10 @@
             box-shadow: 0 2px 0 #3a2a6a;
         }
 
+        .restart-btn.pulse-animation {
+            animation: pulse 0.5s ease-in-out 3;
+        }
+
         .message {
             background: rgba(0,0,0,0.9);
             position: fixed;
@@ -284,13 +292,14 @@
         }
 
         @media (max-width: 700px) {
-            .score-box, .lives-box, .best-box, .level-badge { font-size: 1.2rem; padding: 4px 12px; }
-            .menu-btn, .restart-btn { font-size: 0.8rem; padding: 5px 12px;}
+            .score-box, .lives-box, .best-box, .level-badge { font-size: 1rem; padding: 4px 12px; }
+            .menu-btn, .restart-btn { font-size: 0.7rem; padding: 5px 12px;}
             .message { font-size: 1.2rem; padding: 10px 20px; white-space: nowrap; }
             .difficulty-btn { padding: 10px 20px; font-size: 1.1rem; }
             .panel { padding: 25px 30px; }
             h1 { font-size: 2.5rem; }
             .btn-primary { font-size: 1.3rem; padding: 12px 30px; }
+            .score-box span, .lives-box span, .best-box span, .level-badge span { font-size: 0.7rem; }
         }
     </style>
 </head>
@@ -298,7 +307,6 @@
 
 <div class="stars" id="stars"></div>
 
-<!-- TELA 1: MENU PRINCIPAL -->
 <div class="screen" id="mainMenuScreen">
     <div class="panel">
         <h1>⚡ EMOJI NINJA ⚡</h1>
@@ -308,7 +316,6 @@
     </div>
 </div>
 
-<!-- TELA 2: ESCOLHA DE DIFICULDADE -->
 <div class="screen hide" id="difficultyScreen">
     <div class="panel">
         <h1>🎯 ESCOLHA A DIFICULDADE</h1>
@@ -324,7 +331,6 @@
     </div>
 </div>
 
-<!-- TELA 3: JOGO -->
 <div class="game-container" id="gameContainer" style="display: none;">
     <div class="ui-bar">
         <div class="level-badge"><span>🎯</span> <span id="levelName">Médio</span></div>
@@ -358,8 +364,23 @@
         
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = 1000;
-        canvas.height = 600;
+        
+        // Configuração responsiva do canvas
+        let canvasWidth = 1000;
+        let canvasHeight = 600;
+        
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const maxWidth = Math.min(1200, window.innerWidth - 40);
+            const aspectRatio = canvasHeight / canvasWidth;
+            canvas.style.width = `${maxWidth}px`;
+            canvas.style.height = `${maxWidth * aspectRatio}px`;
+        }
+        
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
         const scoreSpan = document.getElementById('scoreValue');
         const livesSpan = document.getElementById('livesValue');
@@ -367,7 +388,6 @@
         const levelNameSpan = document.getElementById('levelName');
         const msgDiv = document.getElementById('effectMessage');
 
-        // Estado do jogo
         let gameRunning = false;
         let animationId = null;
         let score = 0;
@@ -375,48 +395,46 @@
         let bestScore = localStorage.getItem('emojiNinjaBest') || 0;
         bestSpan.innerText = bestScore;
         
-        let currentDifficulty = 'medium'; // easy, medium, hard
+        let currentDifficulty = 'medium';
         
-        // Configurações por nível - VELOCIDADES DIFERENTES
         const levelConfig = {
             easy: {
-                spawnInterval: 750,      // mais lento para spawn
-                maxEmojis: 12,
-                gravity: 0.18,
-                minVy: -8.5,             // pulo mais baixo
-                maxVy: -6.0,
-                speedVxRange: 2.8,       // movimento lateral lento
-                badProb: 0.12,
-                bombProb: 0.05,
+                spawnInterval: 800,
+                maxEmojis: 10,
+                gravity: 0.15,
+                minVy: -7.5,
+                maxVy: -5.0,
+                speedVxRange: 2.2,
+                badProb: 0.10,
+                bombProb: 0.04,
                 name: '🍃 FÁCIL'
             },
             medium: {
-                spawnInterval: 550,
-                maxEmojis: 18,
-                gravity: 0.22,
-                minVy: -10.5,            // pulo médio-alto
-                maxVy: -7.5,
-                speedVxRange: 4.0,
-                badProb: 0.18,
-                bombProb: 0.10,
+                spawnInterval: 580,
+                maxEmojis: 16,
+                gravity: 0.20,
+                minVy: -10.0,
+                maxVy: -7.0,
+                speedVxRange: 3.5,
+                badProb: 0.16,
+                bombProb: 0.09,
                 name: '⚡ MÉDIO'
             },
             hard: {
-                spawnInterval: 380,       // spawn muito rápido
-                maxEmojis: 26,
-                gravity: 0.28,
-                minVy: -13.0,             // pulo超级 alto
-                maxVy: -9.5,
-                speedVxRange: 5.8,        // movimento lateral rápido
-                badProb: 0.28,
-                bombProb: 0.16,
+                spawnInterval: 400,
+                maxEmojis: 24,
+                gravity: 0.26,
+                minVy: -12.5,
+                maxVy: -9.0,
+                speedVxRange: 5.2,
+                badProb: 0.25,
+                bombProb: 0.14,
                 name: '🔥 DIFÍCIL'
             }
         };
         
         let currentConfig = levelConfig.medium;
         
-        // Emojis e efeitos
         let emojis = [];
         let swipePoints = [];
         const SWIPE_TIMEOUT = 120;
@@ -425,7 +443,6 @@
         let sliceSparks = [];
         let redFlashAlpha = 0;
         
-        // Emojis disponíveis
         const goodEmojis = ['😀', '😂', '🥰', '😎', '🐱', '⭐', '🍕', '🍉', '🍒', '🌸', '🎈', '⚽', '🌟', '🍦', '🐶', '🦄', '🍭', '😍', '🎉', '✨'];
         const badEmojis = ['💩', '💀', '👹', '🤢', '☠️', '🕷️', '🧨', '👻', '😈'];
         const bombEmoji = '💣';
@@ -439,7 +456,6 @@
             setTimeout(() => { msgDiv.style.opacity = "0"; }, 1300);
         }
         
-        // Criar emoji com velocidade baseada na dificuldade
         function createEmoji() {
             const cfg = currentConfig;
             let rng = Math.random();
@@ -457,11 +473,14 @@
                 emojiChar = randomItem(goodEmojis);
             }
             
-            const x = 40 + Math.random() * (canvas.width - 80);
-            const y = canvas.height - 10 + Math.random() * -25;
+            // CORREÇÃO: posição X mais variada e Y no topo/meio da tela
+            const x = 50 + Math.random() * (canvas.width - 100);
+            const y = 30 + Math.random() * (canvas.height * 0.4);
             
-            // Velocidades baseadas na dificuldade
-            const vy = cfg.minVy - Math.random() * (cfg.maxVy - cfg.minVy);
+            // CORREÇÃO: velocidade vertical agora funciona corretamente (de minVy até maxVy)
+            const vyRange = Math.abs(cfg.maxVy - cfg.minVy);
+            const vy = cfg.minVy + Math.random() * vyRange;
+            
             const vx = (Math.random() - 0.5) * cfg.speedVxRange;
             const gravity = cfg.gravity;
             const radius = 34;
@@ -506,7 +525,6 @@
             }
         }
         
-        // Processar corte
         function processSwipeCut() {
             if (!gameRunning || swipePoints.length === 0) return;
             
@@ -538,6 +556,12 @@
                         updateLivesUI();
                         showFloatingText(e.x, e.y, '-1 ❤️', '#ff8888');
                         redFlash();
+                        // Efeito de tremor na vida
+                        const livesBox = document.querySelector('.lives-box');
+                        if(livesBox) {
+                            livesBox.style.transform = 'scale(1.1)';
+                            setTimeout(() => { if(livesBox) livesBox.style.transform = ''; }, 150);
+                        }
                         if (lives <= 0) gameOver();
                     }
                     else if (e.type === 'bomb') {
@@ -545,25 +569,38 @@
                         updateLivesUI();
                         showFloatingText(e.x, e.y, '-2 💣', '#ff6666');
                         redFlash();
+                        const livesBox = document.querySelector('.lives-box');
+                        if(livesBox) {
+                            livesBox.style.transform = 'scale(1.2)';
+                            livesBox.style.backgroundColor = 'rgba(200, 50, 50, 0.9)';
+                            setTimeout(() => { 
+                                if(livesBox) {
+                                    livesBox.style.transform = '';
+                                    livesBox.style.backgroundColor = '';
+                                }
+                            }, 200);
+                        }
                         if (lives <= 0) gameOver();
                     }
                 }
             }
         }
         
+        // CORREÇÃO: limite de partículas para performance
         function createSparkle(x, y) {
-            for(let i=0;i<12;i++) {
+            const maxSparks = 30;
+            const sparkCount = Math.min(8, maxSparks - sliceSparks.length);
+            for(let i = 0; i < sparkCount; i++) {
                 sliceSparks.push({
                     x: x, y: y, 
-                    vx: (Math.random()-0.5)*7, 
-                    vy: (Math.random()-0.5)*7 - 3,
-                    life: 14,
+                    vx: (Math.random()-0.5)*6, 
+                    vy: (Math.random()-0.5)*6 - 2,
+                    life: 12,
                     color: `hsl(${Math.random()*60 + 40}, 100%, 60%)`
                 });
             }
         }
         
-        // Swipe tracking
         let isPointerDown = false;
         
         function addSwipePoint(clientX, clientY) {
@@ -589,17 +626,45 @@
                 bestScore = score;
                 bestSpan.innerText = bestScore;
                 localStorage.setItem('emojiNinjaBest', bestScore);
+                // Efeito visual ao bater recorde
+                const bestBox = document.querySelector('.best-box');
+                if(bestBox) {
+                    bestBox.style.transform = 'scale(1.1)';
+                    bestBox.style.backgroundColor = 'rgba(255, 215, 0, 0.9)';
+                    setTimeout(() => { 
+                        if(bestBox) {
+                            bestBox.style.transform = '';
+                            bestBox.style.backgroundColor = '';
+                        }
+                    }, 300);
+                }
             }
         }
         
-        function updateLivesUI() { livesSpan.innerText = lives; }
+        function updateLivesUI() { 
+            livesSpan.innerText = lives;
+            // Mudar cor das vidas baseado na quantidade
+            const livesBox = document.querySelector('.lives-box');
+            if(livesBox) {
+                if(lives === 1) livesBox.style.borderColor = '#ff6666';
+                else if(lives === 2) livesBox.style.borderColor = '#ffaa66';
+                else livesBox.style.borderColor = '#00aaff';
+            }
+        }
         
         function gameOver() {
             if (!gameRunning) return;
             gameRunning = false;
             showMessage(`💀 GAME OVER! Pontuação: ${score} 💀`, "#ffaa66");
-            if(animationId) cancelAnimationFrame(animationId);
-            animationId = null;
+            
+            // Destacar botão de reinício
+            restartGameBtn.classList.add('pulse-animation');
+            setTimeout(() => {
+                restartGameBtn.classList.remove('pulse-animation');
+            }, 1500);
+            
+            // Parar spawn de novos emojis
+            lastSpawnTime = 0;
         }
         
         function startGame(difficulty) {
@@ -617,7 +682,8 @@
             updateScoreUI();
             updateLivesUI();
             
-            for(let i = 0; i < 5; i++) {
+            // Spawn inicial de emojis
+            for(let i = 0; i < 4; i++) {
                 emojis.push(createEmoji());
             }
             
@@ -645,7 +711,6 @@
             difficultyScreen.classList.remove('hide');
         }
         
-        // Efeitos visuais
         function showFloatingText(x, y, text, color) { 
             floatingTexts.push({ x, y, text, color, life: 28 }); 
         }
@@ -653,7 +718,7 @@
         function updateFloating() {
             for(let i=0; i<floatingTexts.length; i++) {
                 floatingTexts[i].life--;
-                floatingTexts[i].y -= 1.5;
+                floatingTexts[i].y -= 1.2;
                 if(floatingTexts[i].life <= 0) {
                     floatingTexts.splice(i,1);
                     i--;
@@ -663,7 +728,7 @@
         
         function drawFloating() {
             for(let t of floatingTexts) {
-                ctx.font = `bold ${28 - t.life/6}px "Segoe UI Emoji"`;
+                ctx.font = `bold ${26 - t.life/8}px "Segoe UI Emoji"`;
                 ctx.fillStyle = t.color;
                 ctx.shadowBlur = 4;
                 ctx.shadowColor = "black";
@@ -672,12 +737,13 @@
         }
         
         function createSliceEffect(x,y) {
-            for(let i=0;i<10;i++) {
+            const sparkCount = Math.min(8, 25 - sliceSparks.length);
+            for(let i=0;i<sparkCount;i++) {
                 sliceSparks.push({
                     x, y, 
-                    vx: (Math.random()-0.5)*8, 
-                    vy: (Math.random()-0.5)*6 - 2,
-                    life: 12,
+                    vx: (Math.random()-0.5)*7, 
+                    vy: (Math.random()-0.5)*5 - 2,
+                    life: 10,
                     color: `hsl(${Math.random()*60 + 30}, 100%, 65%)`
                 });
             }
@@ -697,15 +763,15 @@
         
         function drawSparks() {
             for(let s of sliceSparks) {
-                ctx.fillStyle = s.color || `rgba(255, 200, 70, ${s.life/12})`;
+                ctx.fillStyle = s.color || `rgba(255, 200, 70, ${s.life/10})`;
                 ctx.beginPath();
-                ctx.arc(s.x, s.y, 4, 0, Math.PI*2);
+                ctx.arc(s.x, s.y, 3.5, 0, Math.PI*2);
                 ctx.fill();
             }
         }
         
         function redFlash() { redFlashAlpha = 0.45; }
-        function updateFlash() { if(redFlashAlpha>0) { redFlashAlpha -= 0.03; if(redFlashAlpha<0) redFlashAlpha=0; } }
+        function updateFlash() { if(redFlashAlpha>0) { redFlashAlpha -= 0.04; if(redFlashAlpha<0) redFlashAlpha=0; } }
         function drawRedFlash() { if(redFlashAlpha>0) { ctx.fillStyle = `rgba(200,30,30,${redFlashAlpha})`; ctx.fillRect(0,0,canvas.width,canvas.height); } }
         
         function drawSwipeTrail() {
@@ -738,10 +804,11 @@
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            ctx.fillStyle = "rgba(0, 100, 200, 0.1)";
-            for(let i=0;i<3;i++) {
+            // Efeito de brilho no fundo
+            ctx.fillStyle = "rgba(0, 100, 200, 0.08)";
+            for(let i=0;i<4;i++) {
                 ctx.beginPath();
-                ctx.arc(200 + i*300, 500, 100, 0, Math.PI*2);
+                ctx.arc(150 + i*250, 450, 120, 0, Math.PI*2);
                 ctx.fill();
             }
             
@@ -765,15 +832,16 @@
             
             ctx.shadowBlur = 0;
             
-            if(!gameRunning && emojis.length > 0) {
-                ctx.fillStyle = "rgba(0,0,0,0.8)";
+            if(!gameRunning && emojis.length > 0 && lives === 0) {
+                ctx.fillStyle = "rgba(0,0,0,0.85)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.font = "bold 42px monospace";
+                ctx.font = "bold 42px 'Segoe UI', monospace";
                 ctx.fillStyle = "#FFD966";
-                ctx.fillText("GAME OVER", canvas.width/2-130, canvas.height/2);
+                ctx.shadowBlur = 0;
+                ctx.fillText("💀 GAME OVER 💀", canvas.width/2-150, canvas.height/2-30);
                 ctx.font = "20px monospace";
                 ctx.fillStyle = "#88aaff";
-                ctx.fillText("Clique em RECOMEÇAR", canvas.width/2-110, canvas.height/2+60);
+                ctx.fillText("Clique em RECOMEÇAR para tentar novamente!", canvas.width/2-210, canvas.height/2+40);
             }
         }
         
@@ -784,9 +852,10 @@
                 return; 
             }
             
-            if(!lastSpawnTime) lastSpawnTime = now;
-            if(now - lastSpawnTime > currentConfig.spawnInterval) {
+            if(lastSpawnTime && now - lastSpawnTime > currentConfig.spawnInterval) {
                 trySpawnEmoji(now);
+                lastSpawnTime = now;
+            } else if(!lastSpawnTime) {
                 lastSpawnTime = now;
             }
             
@@ -802,7 +871,7 @@
             animationId = requestAnimationFrame(gameLoop);
         }
         
-        // Eventos de input
+        // Eventos de input com prevenção de arrasto da página
         function bindEvents() {
             const onPointerMove = (e) => {
                 if(!gameRunning) return;
@@ -856,11 +925,11 @@
         
         restartGameBtn.addEventListener('click', () => {
             if(currentDifficulty) {
+                restartGameBtn.classList.remove('pulse-animation');
                 startGame(currentDifficulty);
             }
         });
         
-        // Seleção de dificuldade
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const difficulty = btn.getAttribute('data-difficulty');
@@ -871,7 +940,6 @@
             });
         });
         
-        // Criar estrelas de fundo
         function createStars() {
             const starsContainer = document.getElementById('stars');
             for(let i = 0; i < 150; i++) {
@@ -890,7 +958,6 @@
         createStars();
         bindEvents();
         
-        // Tela inicial
         mainMenuScreen.classList.remove('hide');
         difficultyScreen.classList.add('hide');
         gameContainer.style.display = 'none';
