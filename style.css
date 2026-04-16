@@ -1,0 +1,296 @@
+* {
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #000428, #004e92);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', 'Poppins', 'Fredoka One', cursive;
+    touch-action: none;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+.stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: twinkle 3s infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); background: #ff3300; box-shadow: 0 8px 0 #8b3a00; }
+}
+
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 4, 40, 0.98), rgba(0, 78, 146, 0.98));
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.screen.hide {
+    display: none;
+}
+
+.panel {
+    background: linear-gradient(145deg, #0a1628, #06122c);
+    border-radius: 60px;
+    padding: 40px 50px;
+    text-align: center;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.1);
+    max-width: 550px;
+    width: 90%;
+    animation: slideIn 0.4s ease;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+h1 {
+    font-size: 3.5rem;
+    margin: 0 0 10px;
+    background: linear-gradient(135deg, #ffe6b0, #ffaa44);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 20px rgba(255,170,68,0.5);
+    letter-spacing: 3px;
+}
+
+.sub {
+    font-size: 1rem;
+    color: #88ccff;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff8c00, #ff5500);
+    color: white;
+    padding: 18px 50px;
+    font-size: 1.8rem;
+    border: none;
+    border-radius: 60px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: 0.1s;
+    box-shadow: 0 8px 0 #8b3a00;
+    font-family: inherit;
+}
+
+.btn-primary:active {
+    transform: translateY(4px);
+    box-shadow: 0 4px 0 #8b3a00;
+}
+
+.difficulty-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 30px 0 20px;
+}
+
+.difficulty-btn {
+    padding: 14px 32px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+}
+
+.difficulty-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+}
+
+.difficulty-btn.easy {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+}
+.difficulty-btn.medium {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+.difficulty-btn.hard {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.back-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 10px 25px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-family: inherit;
+    box-shadow: 0 4px 0 #3a2a6a;
+}
+
+.back-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #3a2a6a;
+}
+
+.game-container {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 48px;
+    padding: 20px;
+    box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+    width: 100%;
+    max-width: 1200px;
+}
+
+canvas {
+    display: block;
+    margin: 0 auto;
+    border-radius: 32px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,255,255,0.2);
+    cursor: crosshair;
+    background: radial-gradient(circle at 20% 30%, #1a3a5c, #0a1a2e);
+    width: 100%;
+    height: auto;
+}
+
+.ui-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px 15px 20px;
+    color: white;
+    text-shadow: 2px 2px 0 #001133;
+    font-weight: bold;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.score-box, .lives-box, .best-box, .level-badge {
+    background: rgba(0, 20, 50, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 8px 20px;
+    border-radius: 60px;
+    font-size: 1.6rem;
+    font-weight: 800;
+    box-shadow: inset 0 -1px 0 #00aaff, 0 5px 15px rgba(0,0,0,0.3);
+    border: 1px solid rgba(0, 200, 255, 0.3);
+}
+
+.score-box span, .lives-box span, .best-box span, .level-badge span {
+    font-size: 0.9rem;
+    margin-right: 8px;
+}
+
+.menu-btn, .restart-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 8px 20px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-family: inherit;
+    color: white;
+    box-shadow: 0 4px 0 #3a2a6a;
+    transition: 0.07s linear;
+}
+
+.menu-btn:active, .restart-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #3a2a6a;
+}
+
+.restart-btn.pulse-animation {
+    animation: pulse 0.5s ease-in-out 3;
+}
+
+.message {
+    background: rgba(0,0,0,0.9);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 15px 35px;
+    border-radius: 80px;
+    color: #ffaa44;
+    font-size: 1.8rem;
+    font-weight: bold;
+    pointer-events: none;
+    backdrop-filter: blur(12px);
+    white-space: nowrap;
+    z-index: 200;
+    opacity: 0;
+    transition: 0.1s;
+    border: 2px solid #ffaa44;
+    font-family: monospace;
+}
+
+.footer-note {
+    text-align: center;
+    margin-top: 12px;
+    color: #aaddff;
+    font-weight: 500;
+    font-size: 0.8rem;
+    text-shadow: 1px 1px 0 #001133;
+}
+
+@media (max-width: 700px) {
+    .score-box, .lives-box, .best-box, .level-badge { font-size: 1rem; padding: 4px 12px; }
+    .menu-btn, .restart-btn { font-size: 0.7rem; padding: 5px 12px;}
+    .message { font-size: 1.2rem; padding: 10px 20px; white-space: nowrap; }
+    .difficulty-btn { padding: 10px 20px; font-size: 1.1rem; }
+    .panel { padding: 25px 30px; }
+    h1 { font-size: 2.5rem; }
+    .btn-primary { font-size: 1.3rem; padding: 12px 30px; }
+    .score-box span, .lives-box span, .best-box span, .level-badge span { font-size: 0.7rem; }
+}

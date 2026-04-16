@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Emoji Ninja - Corte os Emojis!</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="screen" id="mainMenuScreen">
+    <div class="panel">
+        <h1>⚡ EMOJI NINJA ⚡</h1>
+        <div class="sub">Corte os emojis com seu traço ninja!</div>
+        <button class="btn-primary" id="playMainBtn">🎮 JOGAR</button>
+        <div class="sub" style="margin-top: 25px; font-size:0.75rem;">💨 Arraste sobre os emojis para cortar! 💨</div>
+    </div>
+</div>
+
+<div class="screen hide" id="difficultyScreen">
+    <div class="panel">
+        <h1>🎯 ESCOLHA A DIFICULDADE</h1>
+        <div class="sub">Cada nível muda a velocidade dos emojis!</div>
+        
+        <div class="difficulty-buttons">
+            <button class="difficulty-btn easy" data-difficulty="easy">🍃 FÁCIL</button>
+            <button class="difficulty-btn medium" data-difficulty="medium">⚡ MÉDIO</button>
+            <button class="difficulty-btn hard" data-difficulty="hard">🔥 DIFÍCIL</button>
+        </div>
+        
+        <button class="back-btn" id="backToMainBtn">◀ VOLTAR</button>
+    </div>
+</div>
+
+<div class="game-container" id="gameContainer" style="display: none;">
+    <div class="ui-bar">
+        <div class="level-badge"><span>🎯</span> <span id="levelName">Médio</span></div>
+        <div class="score-box"><span>🍢</span> <span id="scoreValue">0</span></div>
+        <div class="best-box"><span>🏆</span> <span id="bestValue">0</span></div>
+        <div class="lives-box"><span>❤️</span> <span id="livesValue">3</span></div>
+        <button class="menu-btn" id="menuBtn">🏠 Menu</button>
+        <button class="restart-btn" id="restartGameBtn">⚡ Recomeçar</button>
+    </div>
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+    <div class="footer-note">
+        💥 Arraste o mouse/dedo sobre os emojis para cortar! 💥 &nbsp;&nbsp; 
+        <span style="color:#88ff88">😀 +10pts</span> &nbsp; | &nbsp;
+        <span style="color:#ff8888">💩 -1 vida &nbsp; 💣 -2 vidas</span>
+    </div>
+</div>
+
+<div id="effectMessage" class="message"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
